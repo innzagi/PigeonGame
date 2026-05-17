@@ -13,10 +13,10 @@
       <Content Include="Resources\Background.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Models\" />
+      <None Remove="Resources\Pigeon.png" />
+      <Content Include="Resources\Pigeon.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
