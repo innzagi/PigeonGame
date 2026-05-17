@@ -1,9 +1,10 @@
 ﻿using System.Drawing;
+using PigeonGame.Dto;
 using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
-public class Pigeon: IPigeon
+public class Pigeon : IPigeon
 {
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -11,15 +12,19 @@ public class Pigeon: IPigeon
     public int Width { get; }
     public int Height { get; }
 
+
     public int Speed { get; }
     public int Health { get; private set; }
     public int MaxHealth { get; }
+
+    private readonly int windowWidth;
+    private readonly int windowHeight;
 
     private readonly Image image;
 
     public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
 
-    public Pigeon(int x, int y, Image image)
+    public Pigeon(int x, int y, Image image, int windowWidth, int windowHeight)
     {
         X = x;
         Y = y;
@@ -31,28 +36,30 @@ public class Pigeon: IPigeon
 
         MaxHealth = 3;
         Health = MaxHealth;
-        
+
         this.image = image;
+        this.windowWidth = windowWidth;
+        this.windowHeight = windowHeight;
     }
 
-    public void Move(bool up, bool down, bool left, bool right, int windowWidth, int windowHeight)
+    public void Move(MovementInput movementInput)
     {
-        if (up)
+        if (movementInput.Up)
             Y -= Speed;
 
-        if (down)
+        if (movementInput.Down)
             Y += Speed;
 
-        if (left)
+        if (movementInput.Left)
             X -= Speed;
 
-        if (right)
+        if (movementInput.Right)
             X += Speed;
 
-        KeepInsideWindow(windowWidth, windowHeight);
+        KeepInsideWindow();
     }
 
-    private void KeepInsideWindow(int windowWidth, int windowHeight)
+    private void KeepInsideWindow()
     {
         if (X < 0)
             X = 0;

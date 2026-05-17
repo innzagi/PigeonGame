@@ -1,4 +1,5 @@
-﻿using PigeonGame.Interfaces;
+﻿using PigeonGame.Dto;
+using PigeonGame.Interfaces;
 using PigeonGame.Models;
 
 namespace PigeonGame.Services;
@@ -7,13 +8,8 @@ public class GameProcess(Pigeon pigeon) : IGameProcess
 {
     private Pigeon _pigeon = pigeon;
 
-    public void Update()
+    public void Update(MovementInput movementInput)
     {
-        
-    }
-
-    public void SetMovement(bool up, bool down, bool left, bool right)
-    {
-        
+        _pigeon.Move(movementInput);
     }
 }

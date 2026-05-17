@@ -1,8 +1,8 @@
-﻿namespace PigeonGame.Interfaces;
+﻿using PigeonGame.Dto;
+
+namespace PigeonGame.Interfaces;
 
 public interface IGameProcess
 {
-    void Update();
-
-    void SetMovement(bool up, bool down, bool left, bool right);
+    void Update(MovementInput movementInput);
 }

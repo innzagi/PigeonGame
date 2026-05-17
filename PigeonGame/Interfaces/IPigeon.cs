@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using PigeonGame.Dto;
 
 namespace PigeonGame.Interfaces;
 
@@ -16,7 +17,7 @@ public interface IPigeon
 
     Rectangle Bounds { get; }
 
-    void Move(bool up, bool down, bool left, bool right, int windowWidth, int windowHeight);
+    void Move(MovementInput movementInput);
 
     void TakeDamage(int damage);
 
