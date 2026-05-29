@@ -84,11 +84,52 @@ namespace PigeonGame
             if (e.KeyCode == Keys.D)
                 _movementInput.Right = false;
         }
+        
 
         private void PaintFormArena(object sender, PaintEventArgs e)
         {
             e.Graphics.DrawImage(_background, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
             _pigeon.Draw(e.Graphics);
+            DrawHealthPanel(e.Graphics);
+        }
+
+        private void DrawHealthPanel(Graphics graphics)
+        {
+            var panelX = 20;
+            var panelY = 20;
+            var panelWidth = 260;
+            var panelHeight = 70;
+
+            using var panelBrush = new SolidBrush(Color.FromArgb(100, 0, 0, 0));
+
+            graphics.FillRectangle(
+                panelBrush,
+                panelX,
+                panelY,
+                panelWidth,
+                panelHeight
+            );
+
+            graphics.DrawRectangle(
+                Pens.White,
+                panelX,
+                panelY,
+                panelWidth,
+                panelHeight
+            );
+
+            var hearts = "";
+
+            for (var i = 0; i < _pigeon.Health; i++)
+                hearts += "♥ ";
+
+            graphics.DrawString(
+                $"Health: {hearts}",
+                new Font("Arial", 24, FontStyle.Bold),
+                Brushes.Red,
+                panelX + 15,
+                panelY + 18
+            );
         }
     }
 }
