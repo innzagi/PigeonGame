@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using PigeonGame.Dto;
 using PigeonGame.Interfaces;
 
@@ -12,7 +12,6 @@ public class Pigeon : IPigeon
     public int Width { get; }
     public int Height { get; }
 
-
     public int Speed { get; }
     public int Health { get; private set; }
     public int MaxHealth { get; }
@@ -20,11 +19,20 @@ public class Pigeon : IPigeon
     private readonly int windowWidth;
     private readonly int windowHeight;
 
-    private readonly Image image;
+    private readonly Bitmap[] walkFrames;
+    private readonly Bitmap[] flyFrames;
+
+    private int frameIndex;
+    private int tickCounter;
+    private const int TicksPerFrame = 6;
+
+    // ground level: bottom 25% of the window matches the pavement in the background
+    private int GroundY => (int)(windowHeight * 0.75);
+    private bool IsOnGround => Y + Height >= GroundY;
 
     public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
 
-    public Pigeon(int x, int y, Image image, int windowWidth, int windowHeight)
+    public Pigeon(int x, int y, int windowWidth, int windowHeight)
     {
         X = x;
         Y = y;
@@ -32,71 +40,83 @@ public class Pigeon : IPigeon
         Width = 128;
         Height = 128;
 
-        Speed = 5;
+        Speed = 10;
 
         MaxHealth = 3;
         Health = MaxHealth;
 
-        this.image = image;
         this.windowWidth = windowWidth;
         this.windowHeight = windowHeight;
+
+        walkFrames = SliceSheet("Resources/pigeon_walking-Sheet.png", 4, 32, 32);
+        flyFrames  = SliceSheet("Resources/pigeon_fiy-Sheet.png",     7, 32, 32);
+    }
+
+    private Bitmap[] SliceSheet(string path, int frameCount, int frameWidth, int frameHeight)
+    {
+        var sheet = new Bitmap(path);
+        var frames = new Bitmap[frameCount];
+        for (var i = 0; i < frameCount; i++)
+        {
+            var frame = new Bitmap(Width, Height);
+            using var g = Graphics.FromImage(frame);
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+            g.DrawImage(sheet, new Rectangle(0, 0, Width, Height),
+                new Rectangle(i * frameWidth, 0, frameWidth, frameHeight), GraphicsUnit.Pixel);
+            frames[i] = frame;
+        }
+        sheet.Dispose();
+        return frames;
     }
 
     public void Move(MovementInput movementInput)
     {
-        if (movementInput.Up)
-            Y -= Speed;
-
-        if (movementInput.Down)
-            Y += Speed;
-
-        if (movementInput.Left)
-            X -= Speed;
-
-        if (movementInput.Right)
-            X += Speed;
+        if (movementInput.Up)    Y -= Speed;
+        if (movementInput.Down)  Y += Speed;
+        if (movementInput.Left)  X -= Speed;
+        if (movementInput.Right) X += Speed;
 
         KeepInsideWindow();
+        AdvanceAnimation();
+    }
+
+    private void AdvanceAnimation()
+    {
+        tickCounter++;
+        if (tickCounter < TicksPerFrame)
+            return;
+
+        tickCounter = 0;
+        var frames = IsOnGround ? walkFrames : flyFrames;
+        frameIndex = (frameIndex + 1) % frames.Length;
     }
 
     private void KeepInsideWindow()
     {
-        if (X < 0)
-            X = 0;
-
-        if (Y < 0)
-            Y = 0;
-
-        if (X + Width > windowWidth)
-            X = windowWidth - Width;
-
-        if (Y + Height > windowHeight)
-            Y = windowHeight - Height;
+        if (X < 0) X = 0;
+        if (Y < 0) Y = 0;
+        if (X + Width > windowWidth)   X = windowWidth - Width;
+        if (Y + Height > windowHeight) Y = windowHeight - Height;
     }
 
     public void TakeDamage(int damage)
     {
         Health -= damage;
-
-        if (Health < 0)
-            Health = 0;
+        if (Health < 0) Health = 0;
     }
 
     public void Heal(int value)
     {
         Health += value;
-
-        if (Health > MaxHealth)
-            Health = MaxHealth;
+        if (Health > MaxHealth) Health = MaxHealth;
     }
 
-    public bool IsDead()
-    {
-        return Health <= 0;
-    }
+    public bool IsDead() => Health <= 0;
 
     public void Draw(Graphics graphics)
     {
-        graphics.DrawImage(image, X, Y, Width, Height);
+        var frames = IsOnGround ? walkFrames : flyFrames;
+        graphics.DrawImageUnscaled(frames[frameIndex % frames.Length], X, Y);
     }
 }

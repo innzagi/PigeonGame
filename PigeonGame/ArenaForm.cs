@@ -9,13 +9,12 @@ namespace PigeonGame
 {
     public partial class ArenaForm : Form
     {
-        private Image _pigeonImage;
         private GameProcess _gameProcess;
         private Pigeon _pigeon;
         private readonly System.Windows.Forms.Timer _timer = new();
         private MovementInput _movementInput = new();
 
-        private Image _background;
+        private Bitmap _background;
 
         public ArenaForm()
         {
@@ -26,7 +25,7 @@ namespace PigeonGame
 
         private void StartGame()
         {
-            _pigeon = new Pigeon(100, 100, _pigeonImage, Width, Height);
+            _pigeon = new Pigeon(100, 100, Width, Height);
             _gameProcess = new GameProcess(_pigeon);
             _timer.Interval = 20;
             _timer.Tick += GameTimer_Tick;
@@ -41,14 +40,19 @@ namespace PigeonGame
 
         private void SetupArena()
         {
-            _pigeonImage = Image.FromFile("Resources/Pigeon.png");
             this.Text = "Голубиный дозор";
             this.Width = 1920;
             this.Height = 1080;
 
             this.DoubleBuffered = true;
 
-            _background = Image.FromFile("Resources/Background.png");
+            var rawBackground = Image.FromFile("Resources/Background.png");
+            _background = new Bitmap(ClientSize.Width, ClientSize.Height);
+            using var bg = Graphics.FromImage(_background);
+            bg.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            bg.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+            bg.DrawImage(rawBackground, 0, 0, ClientSize.Width, ClientSize.Height);
+            rawBackground.Dispose();
 
             this.Paint += PaintFormArena;
             this.KeyDown += ArenaForm_KeyDown;
@@ -88,7 +92,7 @@ namespace PigeonGame
 
         private void PaintFormArena(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(_background, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+            e.Graphics.DrawImageUnscaled(_background, 0, 0);
             _pigeon.Draw(e.Graphics);
             DrawHealthPanel(e.Graphics);
         }
