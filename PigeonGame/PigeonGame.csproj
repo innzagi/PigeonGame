@@ -13,6 +13,10 @@
       <Content Include="Resources\pigeon_walking-Sheet.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Resources\Crow.png" />
+      <Content Include="Resources\Crow.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <None Remove="Resources\pigeon_eat-Sheet.png" />
       <Content Include="Resources\pigeon_eat-Sheet.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -23,6 +27,11 @@
       </Content>
       <None Remove="Resources\Background.png" />
       <Content Include="Resources\Background.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\nest.svg" />
+      <None Remove="Resources\nest.png" />
+      <Content Include="Resources\nest.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

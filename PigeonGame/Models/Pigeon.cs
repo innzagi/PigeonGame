@@ -26,6 +26,8 @@ public class Pigeon : IPigeon
     private int tickCounter;
     private const int TicksPerFrame = 6;
 
+    private bool _facingLeft;
+
     // ground level: bottom 25% of the window matches the pavement in the background
     private int GroundY => (int)(windowHeight * 0.75);
     private bool IsOnGround => Y + Height >= GroundY;
@@ -42,7 +44,7 @@ public class Pigeon : IPigeon
 
         Speed = 10;
 
-        MaxHealth = 3;
+        MaxHealth = 5;
         Health = MaxHealth;
 
         this.windowWidth = windowWidth;
@@ -72,10 +74,10 @@ public class Pigeon : IPigeon
 
     public void Move(MovementInput movementInput)
     {
+        if (movementInput.Left)  { X -= Speed; _facingLeft = true;  }
+        if (movementInput.Right) { X += Speed; _facingLeft = false; }
         if (movementInput.Up)    Y -= Speed;
         if (movementInput.Down)  Y += Speed;
-        if (movementInput.Left)  X -= Speed;
-        if (movementInput.Right) X += Speed;
 
         KeepInsideWindow();
         AdvanceAnimation();
@@ -117,6 +119,19 @@ public class Pigeon : IPigeon
     public void Draw(Graphics graphics)
     {
         var frames = IsOnGround ? walkFrames : flyFrames;
-        graphics.DrawImageUnscaled(frames[frameIndex % frames.Length], X, Y);
+        var frame = frames[frameIndex % frames.Length];
+
+        if (_facingLeft)
+        {
+            // отзеркаливаем по горизонтали через трансформацию
+            graphics.TranslateTransform(X + Width, Y);
+            graphics.ScaleTransform(-1, 1);
+            graphics.DrawImageUnscaled(frame, 0, 0);
+            graphics.ResetTransform();
+        }
+        else
+        {
+            graphics.DrawImageUnscaled(frame, X, Y);
+        }
     }
 }
