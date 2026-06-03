@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using PigeonGame.Helpers;
 using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
@@ -12,8 +13,8 @@ public class Crow : ICrow
     public float X { get; private set; }
     public float Y { get; private set; }
 
-    public int Width     { get; } = 128;
-    public int Height    { get; } = 128;
+    public int Width     { get; } = 350;
+    public int Height    { get; } = 350;
     public int Health    { get; private set; }
     public int MaxHealth { get; } = 5;
 
@@ -41,6 +42,11 @@ public class Crow : ICrow
     private const int FramesPerRow = 4;
     private const int FlyRow    = 3;
     private const int AttackRow = 1;
+    
+    private const int PixelSize  = 8;   // размер одного «пикселя» сердечка
+    private const int HeartCols  = 7;
+    private const int HeartRows  = 6;
+    private const int HeartGap   = 12; // отступ между сердечками
 
     public Crow(float startX, float startY)
     {
@@ -142,5 +148,19 @@ public class Crow : ICrow
         {
             graphics.DrawImageUnscaled(frame, drawX, drawY);
         }
+         
+        const int crowPixel = PixelSize / 2;
+        const int crowGap   = HeartGap  / 2;
+        const int crowPad   = 8;
+        int crowPanelW = this.MaxHealth * (HeartCols * crowPixel) + (this.MaxHealth - 1) * crowGap + crowPad * 2;
+        int crowPanelH = HeartRows * crowPixel + crowPad * 2;
+        
+        DrawHelper.DrawHealthPanel(graphics, this.Health, this.MaxHealth,
+            panelX: (int)this.X + (this.Width - crowPanelW) / 2,
+            panelY: (int)this.Y - crowPanelH - 4,
+            fillColor: Color.MediumPurple, borderColor: Color.FromArgb(80, 0, 120),
+            pixelSize: crowPixel, heartGap: crowGap, panelPad: crowPad);
     }
+    
+    
 }
