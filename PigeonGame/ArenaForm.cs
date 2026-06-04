@@ -7,7 +7,8 @@ namespace PigeonGame
 {
     public partial class ArenaForm : Form
     {
-        private Arena _arena;
+        // TODO: Заменить на MainMenuForm
+        private FirstLevel _firstLevel;
         private readonly System.Windows.Forms.Timer _timer = new();
         private MovementInput _movementInput = new();
 
@@ -32,7 +33,8 @@ namespace PigeonGame
 
         private void StartGame()
         {
-            _arena = new Arena(ClientSize.Width, ClientSize.Height);
+            // TODO: Заменить на MainMenuForm
+            _firstLevel = new FirstLevel(ClientSize.Width, ClientSize.Height);
             _timer.Interval = 20;
             _timer.Tick += OnTick;
             _timer.Start();
@@ -40,13 +42,13 @@ namespace PigeonGame
 
         private void OnTick(object? sender, EventArgs e)
         {
-            _arena.Update(_movementInput);
+            _firstLevel.Update(_movementInput);
             Invalidate();
         }
 
         private void OnPaint(object? sender, PaintEventArgs e)
         {
-            _arena.Draw(e.Graphics);
+            _firstLevel.Draw(e.Graphics);
         }
 
         private void OnKeyDown(object? sender, KeyEventArgs e)
@@ -67,7 +69,7 @@ namespace PigeonGame
         private void OnMouseDown(object? sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-                _arena.Shoot(e.X, e.Y);
+                _firstLevel.Shoot(e.X, e.Y);
         }
     }
 }

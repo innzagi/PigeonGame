@@ -7,4 +7,8 @@ public interface IArena
 {
     void Update(MovementInput movementInput);
     void Draw(Graphics graphics);
+    void DrawNextArena(Graphics graphics);
+
+    
+    
 }

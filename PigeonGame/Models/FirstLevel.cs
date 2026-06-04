@@ -7,7 +7,7 @@ using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
-public class Arena : IArena
+public class FirstLevel : IArena
 {
     public int Width { get; }
     public int Height { get; }
@@ -16,13 +16,14 @@ public class Arena : IArena
     private readonly Pigeon _pigeon;
     private readonly Nest _nest;
     private readonly Crow _crow;
+    private IArena NextArena { get; set; }
 
     private readonly List<PigeonDropping> _droppings = new();
 
     private const int PixelSize = 8;
-    private const int HeartGap  = 12;
+    private const int HeartGap = 12;
 
-    public Arena(int width, int height)
+    public FirstLevel(int width, int height)
     {
         Width = width;
         Height = height;
@@ -47,7 +48,7 @@ public class Arena : IArena
 
     public void Shoot(int targetX, int targetY)
     {
-        float cx = _pigeon.X + _pigeon.Width  / 2f;
+        float cx = _pigeon.X + _pigeon.Width / 2f;
         float cy = _pigeon.Y + _pigeon.Height / 2f;
         _droppings.Add(new PigeonDropping(cx, cy, targetX, targetY));
     }
@@ -77,18 +78,31 @@ public class Arena : IArena
 
     public void Draw(Graphics graphics)
     {
-        graphics.DrawImageUnscaled(_background, 0, 0);
-        _nest.Draw(graphics);
-        _crow.Draw(graphics);
+        if (!_crow.IsDead())
+        {
+            graphics.DrawImageUnscaled(_background, 0, 0);
+            _nest.Draw(graphics);
+            _crow.Draw(graphics);
 
-        foreach (var d in _droppings)
-            d.Draw(graphics);
+            foreach (var d in _droppings)
+                d.Draw(graphics);
 
-        _pigeon.Draw(graphics);
+            _pigeon.Draw(graphics);
 
-        DrawHelper.DrawHealthPanel(graphics, _pigeon.Health, _pigeon.MaxHealth,
-            panelX: 20, panelY: 20,
-            fillColor: Color.Crimson, borderColor: Color.FromArgb(180, 0, 0),
-            pixelSize: PixelSize, heartGap: HeartGap, panelPad: 16);
+            DrawHelper.DrawHealthPanel(graphics, _pigeon.Health, _pigeon.MaxHealth,
+                panelX: 20, panelY: 20,
+                fillColor: Color.Crimson, borderColor: Color.FromArgb(180, 0, 0),
+                pixelSize: PixelSize, heartGap: HeartGap, panelPad: 16);
+        }
+        else
+        {
+            DrawNextArena(graphics);
+        }
+        
+    }
+
+    public void DrawNextArena(Graphics graphics)
+    {
+        NextArena.Draw(graphics);
     }
 }
