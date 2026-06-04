@@ -22,15 +22,6 @@ public class DrawHelper
         int pixelSize, int heartGap, int panelPad)
     {
         int heartWidth  = HeartCols * pixelSize;
-        int heartHeight = HeartRows * pixelSize;
-        int totalWidth  = maxHealth * heartWidth + (maxHealth - 1) * heartGap;
-
-        int panelW = totalWidth  + panelPad * 2;
-        int panelH = heartHeight + panelPad * 2;
-
-        using var bg = new SolidBrush(Color.FromArgb(140, 0, 0, 0));
-        graphics.FillRectangle(bg, panelX, panelY, panelW, panelH);
-        graphics.DrawRectangle(Pens.White, panelX, panelY, panelW, panelH);
 
         int originX = panelX + panelPad;
         int originY = panelY + panelPad;

@@ -27,6 +27,7 @@ namespace PigeonGame
             Paint += OnPaint;
             KeyDown += OnKeyDown;
             KeyUp += OnKeyUp;
+            MouseDown += OnMouseDown;
         }
 
         private void StartGame()
@@ -62,6 +63,11 @@ namespace PigeonGame
             if (e.KeyCode == Keys.S) _movementInput.Down  = false;
             if (e.KeyCode == Keys.A) _movementInput.Left  = false;
             if (e.KeyCode == Keys.D) _movementInput.Right = false;
+        }
+        private void OnMouseDown(object? sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+                _arena.Shoot(e.X, e.Y);
         }
     }
 }

@@ -6,16 +6,20 @@ using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
-public enum CrowState { Chasing, Attacking }
+public enum CrowState
+{
+    Chasing,
+    Attacking
+}
 
 public class Crow : ICrow
 {
     public float X { get; private set; }
     public float Y { get; private set; }
 
-    public int Width     { get; } = 350;
-    public int Height    { get; } = 350;
-    public int Health    { get; private set; }
+    public int Width { get; } = 350;
+    public int Height { get; } = 350;
+    public int Health { get; private set; }
     public int MaxHealth { get; } = 5;
 
     private CrowState _state = CrowState.Chasing;
@@ -40,13 +44,13 @@ public class Crow : ICrow
     // спрайт: 4 строки × 4 столбца, каждый кадр 48×48
     private const int FrameSize = 48;
     private const int FramesPerRow = 4;
-    private const int FlyRow    = 3;
+    private const int FlyRow = 3;
     private const int AttackRow = 1;
-    
-    private const int PixelSize  = 8;   // размер одного «пикселя» сердечка
-    private const int HeartCols  = 7;
-    private const int HeartRows  = 6;
-    private const int HeartGap   = 12; // отступ между сердечками
+
+    private const int PixelSize = 8; // размер одного «пикселя» сердечка
+    private const int HeartCols = 7;
+    private const int HeartRows = 6;
+    private const int HeartGap = 12; // отступ между сердечками
 
     public Crow(float startX, float startY)
     {
@@ -54,7 +58,7 @@ public class Crow : ICrow
         Y = startY;
         Health = MaxHealth;
 
-        _flyFrames    = SliceRow("Resources/Crow.png", FlyRow);
+        _flyFrames = SliceRow("Resources/Crow.png", FlyRow);
         _attackFrames = SliceRow("Resources/Crow.png", AttackRow);
     }
 
@@ -68,7 +72,7 @@ public class Crow : ICrow
             var frame = new Bitmap(Width, Height);
             using var g = Graphics.FromImage(frame);
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
-            g.PixelOffsetMode   = PixelOffsetMode.Half;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
             g.DrawImage(sheet,
                 new Rectangle(0, 0, Width, Height),
                 new Rectangle(i * FrameSize, row * FrameSize, FrameSize, FrameSize),
@@ -82,13 +86,13 @@ public class Crow : ICrow
 
     public void Update(Pigeon pigeon)
     {
-        float pigeonCx = pigeon.X + pigeon.Width  / 2f;
+        float pigeonCx = pigeon.X + pigeon.Width / 2f;
         float pigeonCy = pigeon.Y + pigeon.Height / 2f;
-        float crowCx   = X + Width  / 2f;
-        float crowCy   = Y + Height / 2f;
+        float crowCx = X + Width / 2f;
+        float crowCy = Y + Height / 2f;
 
-        float dx   = pigeonCx - crowCx;
-        float dy   = pigeonCy - crowCy;
+        float dx = pigeonCx - crowCx;
+        float dy = pigeonCy - crowCy;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
 
         if (dist <= AttackDistance)
@@ -131,11 +135,18 @@ public class Crow : ICrow
 
     public void Draw(Graphics graphics)
     {
+        if (!IsDead())
+            InternalDraw(graphics);
+    }
+    
+    private void InternalDraw(Graphics graphics)
+    {
         var frames = _state == CrowState.Attacking ? _attackFrames : _flyFrames;
-        var frame  = frames[_frameIndex];
+        var frame = frames[_frameIndex];
 
         int drawX = (int)X;
         int drawY = (int)Y;
+
 
         if (_facingLeft)
         {
@@ -148,19 +159,25 @@ public class Crow : ICrow
         {
             graphics.DrawImageUnscaled(frame, drawX, drawY);
         }
-         
+
         const int crowPixel = PixelSize / 2;
-        const int crowGap   = HeartGap  / 2;
-        const int crowPad   = 8;
+        const int crowGap = HeartGap / 2;
+        const int crowPad = 8;
         int crowPanelW = this.MaxHealth * (HeartCols * crowPixel) + (this.MaxHealth - 1) * crowGap + crowPad * 2;
         int crowPanelH = HeartRows * crowPixel + crowPad * 2;
-        
+
         DrawHelper.DrawHealthPanel(graphics, this.Health, this.MaxHealth,
             panelX: (int)this.X + (this.Width - crowPanelW) / 2,
-            panelY: (int)this.Y - crowPanelH - 4,
+            panelY: (int)this.Y - crowPanelH + 80,
             fillColor: Color.MediumPurple, borderColor: Color.FromArgb(80, 0, 120),
             pixelSize: crowPixel, heartGap: crowGap, panelPad: crowPad);
     }
-    
-    
+
+    public void TakeDamage(int damage)
+    {
+        Health -= damage;
+        if (Health < 0) Health = 0;
+    }
+
+    public bool IsDead() => Health <= 0;
 }
