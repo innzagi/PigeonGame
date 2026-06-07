@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
@@ -41,7 +42,7 @@ public class PigeonDropping
             IsExpired = true;
     }
 
-    public bool Hits(Crow crow)
+    public bool Hits(ICrow crow)
     {
         var bounds = new RectangleF(crow.X + crow.Width * 0.075f,
             crow.Y + crow.Height * 0.075f,

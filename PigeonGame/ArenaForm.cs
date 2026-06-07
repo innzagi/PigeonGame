@@ -75,10 +75,11 @@ namespace PigeonGame
 
         private void OnMouseDown(object? sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (e.Button == MouseButtons.Left)
+            {
                 _arena.Shoot(e.X, e.Y);
-            else if (e.Button == MouseButtons.Left)
                 _arena.OnLeftClick(e.X, e.Y);
+            }
         }
     }
 }
