@@ -92,6 +92,10 @@
       <Content Include="Resources\Restart.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Resources\Сhit.png" />
+      <Content Include="Resources\Сhit.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
