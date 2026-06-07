@@ -151,6 +151,9 @@ public class Pigeon : IPigeon
 
     public void Draw(Graphics graphics)
     {
+        if (_shootCooldownTicks > 0)
+            DrawCooldownBar(graphics);
+
         // мигаем во время неуязвимости: пропускаем отрисовку каждые ~5 кадров
         if (_invulnerableTicks > 0 && (_invulnerableTicks / 5) % 2 == 0)
             return;
@@ -169,6 +172,26 @@ public class Pigeon : IPigeon
         else
         {
             graphics.DrawImageUnscaled(frame, X, Y);
+        }
+    }
+
+    private void DrawCooldownBar(Graphics graphics)
+    {
+        const int barHeight = 4;
+        const int barOffset = 10;
+
+        int barX = X;
+        int barY = Y - barOffset;
+        float ratio = 1f - (float)_shootCooldownTicks / ShootCooldownDuration;
+        int fillWidth = (int)(Width * ratio);
+
+        using var bgBrush = new SolidBrush(Color.FromArgb(120, 0, 0, 0));
+        graphics.FillRectangle(bgBrush, barX, barY, Width, barHeight);
+
+        if (fillWidth > 0)
+        {
+            using var fillBrush = new SolidBrush(Color.FromArgb(255, 60, 210, 60));
+            graphics.FillRectangle(fillBrush, barX, barY, fillWidth, barHeight);
         }
     }
 }

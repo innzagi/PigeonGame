@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
 using PigeonGame.Dto;
 using PigeonGame.Helpers;
 using PigeonGame.Interfaces;
@@ -17,45 +15,39 @@ public class SecondLevel : IArena
     private readonly Pigeon _pigeon;
     private readonly Nest _nest;
     private readonly List<Crow> _crows = new();
-
     private readonly List<PigeonDropping> _droppings = new();
+    private readonly GameOverHelper _gameOver;
 
     private const int PixelSize = 8;
     private const int HeartGap = 12;
-
-    // на втором уровне вороны быстрее и бьют чаще, чем на первом
-    private const float CrowChaseSpeed = 4.0f;
+    private const float CrowChaseSpeed = 7.0f;
     private const int CrowAttackInterval = 50;
+    private const int SpawnInterval = 300; // 10 сек при 20мс/тик
+
+    private IArena? _nextArena;
+
+    private readonly float[] _spawnYPositions;
+    private int _spawnIndex;
+    private int _spawnTick;
 
     public SecondLevel(int width, int height)
     {
         Width = width;
         Height = height;
 
-        _background = LoadBackground(width, height);
+        _background = BitmapHelper.LoadScaledBitmap("Resources/BackgroundTwoLewel.png", width, height);
         _pigeon = new Pigeon(100, 100, width, height);
         _nest = new Nest(20, 20, width, height);
+        _gameOver = new GameOverHelper(width, height);
 
-        _crows.Add(new Crow(width - 200, height / 4f,         CrowChaseSpeed, CrowAttackInterval));
-        _crows.Add(new Crow(width - 200, height / 2f,         CrowChaseSpeed, CrowAttackInterval));
-        _crows.Add(new Crow(width - 200, height * 3f / 4f,    CrowChaseSpeed, CrowAttackInterval));
-    }
+        _spawnYPositions = [height / 4f, height / 2f, height * 3f / 4f];
 
-    private static Bitmap LoadBackground(int width, int height)
-    {
-        var raw = Image.FromFile("Resources/BackgroundTwoLewel.png");
-        var bmp = new Bitmap(width, height);
-        using var g = Graphics.FromImage(bmp);
-        g.InterpolationMode = InterpolationMode.NearestNeighbor;
-        g.PixelOffsetMode = PixelOffsetMode.Half;
-        g.DrawImage(raw, 0, 0, width, height);
-        raw.Dispose();
-        return bmp;
+        SpawnNextCrow();
     }
 
     public void Shoot(int targetX, int targetY)
     {
-        // Стрелять можно только когда прошла перезарядка
+        if (_pigeon.IsDead()) return;
         if (!_pigeon.TryShoot()) return;
 
         float cx = _pigeon.X + _pigeon.Width / 2f;
@@ -65,14 +57,33 @@ public class SecondLevel : IArena
 
     public void OnLeftClick(int x, int y)
     {
-        // На втором уровне ЛКМ ничего не делает
+        if (_pigeon.IsDead() && _gameOver.IsRestartClicked(x, y) && _nextArena == null)
+            _nextArena = new SecondLevel(Width, Height);
     }
 
-    public IArena? GetNextArena() => null;
+    public IArena? GetNextArena() => _nextArena;
+
+    private void SpawnNextCrow()
+    {
+        if (_spawnIndex >= _spawnYPositions.Length) return;
+        _crows.Add(new Crow(Width - 200, _spawnYPositions[_spawnIndex], CrowChaseSpeed, CrowAttackInterval));
+        _spawnIndex++;
+        _spawnTick = 0;
+    }
 
     public void Update(MovementInput movementInput)
     {
+        if (_pigeon.IsDead())
+            return;
+
         _pigeon.Move(movementInput);
+
+        if (_spawnIndex < _spawnYPositions.Length)
+        {
+            _spawnTick++;
+            if (_spawnTick >= SpawnInterval)
+                SpawnNextCrow();
+        }
 
         foreach (var crow in _crows)
             if (!crow.IsDead())
@@ -115,5 +126,8 @@ public class SecondLevel : IArena
             panelX: 20, panelY: 20,
             fillColor: Color.Crimson, borderColor: Color.FromArgb(180, 0, 0),
             pixelSize: PixelSize, heartGap: HeartGap, panelPad: 16);
+
+        if (_pigeon.IsDead())
+            _gameOver.Draw(graphics);
     }
 }
