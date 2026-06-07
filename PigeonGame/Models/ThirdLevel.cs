@@ -31,6 +31,7 @@ public class ThirdLevel : IArena
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
     private bool    _isVictory;
+    private bool    _gameOverMusicPlayed;
 
     private readonly Queue<Func<ICrow>> _spawnQueue = new();
     private int _spawnTick;
@@ -42,6 +43,8 @@ public class ThirdLevel : IArena
     {
         Width  = width;
         Height = height;
+
+        MusicPlayer.Play("Fight");
 
         _background = BitmapHelper.LoadScaledBitmap("Resources/ВackgroundThirdLevel.png", width, height);
         _pigeon  = new Pigeon(100, 100, width, height, pigeonHealth);
@@ -129,7 +132,17 @@ public class ThirdLevel : IArena
 
     public void Update(MovementInput movementInput)
     {
-        if (_pigeon.IsDead() || _isVictory)
+        if (_pigeon.IsDead())
+        {
+            if (!_gameOverMusicPlayed)
+            {
+                MusicPlayer.Play("Intro");
+                _gameOverMusicPlayed = true;
+            }
+            return;
+        }
+
+        if (_isVictory)
             return;
 
         _pigeon.Move(movementInput);
@@ -190,7 +203,10 @@ public class ThirdLevel : IArena
         }
 
         if (AllCrowsDead())
+        {
             _isVictory = true;
+            MusicPlayer.Play("Intro");
+        }
     }
 
     public void Draw(Graphics graphics)

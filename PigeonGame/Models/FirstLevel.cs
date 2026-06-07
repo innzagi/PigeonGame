@@ -27,11 +27,14 @@ public class FirstLevel : IArena
     private int     _crowDeadTicks;
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
+    private bool    _gameOverMusicPlayed;
 
     public FirstLevel(int width, int height)
     {
         Width  = width;
         Height = height;
+
+        MusicPlayer.Play("Fight");
 
         _background = BitmapHelper.LoadScaledBitmap("Resources/BackgroundFirstLevel.png", width, height);
         _pigeon  = new Pigeon(100, 100, width, height);
@@ -72,7 +75,14 @@ public class FirstLevel : IArena
     public void Update(MovementInput movementInput)
     {
         if (_pigeon.IsDead())
+        {
+            if (!_gameOverMusicPlayed)
+            {
+                MusicPlayer.Play("Intro");
+                _gameOverMusicPlayed = true;
+            }
             return;
+        }
 
         _pigeon.Move(movementInput);
 

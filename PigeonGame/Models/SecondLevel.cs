@@ -31,6 +31,7 @@ public class SecondLevel : IArena
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
     private int     _allDeadTicks;
+    private bool    _gameOverMusicPlayed;
 
     private readonly Queue<Func<ICrow>> _spawnQueue = new();
     private int _spawnTick;
@@ -43,6 +44,8 @@ public class SecondLevel : IArena
     {
         Width  = width;
         Height = height;
+
+        MusicPlayer.Play("Fight");
 
         _background = BitmapHelper.LoadScaledBitmap("Resources/BackgroundTwoLewel.png", width, height);
         _pigeon  = new Pigeon(100, 100, width, height, pigeonHealth);
@@ -118,7 +121,14 @@ public class SecondLevel : IArena
     public void Update(MovementInput movementInput)
     {
         if (_pigeon.IsDead())
+        {
+            if (!_gameOverMusicPlayed)
+            {
+                MusicPlayer.Play("Intro");
+                _gameOverMusicPlayed = true;
+            }
             return;
+        }
 
         _pigeon.Move(movementInput);
 

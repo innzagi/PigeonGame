@@ -1,5 +1,6 @@
 using System.Drawing.Drawing2D;
 using PigeonGame.Dto;
+using PigeonGame.Helpers;
 using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
@@ -19,6 +20,8 @@ public class MainMenuForm : IArena
     {
         Width = width;
         Height = height;
+
+        MusicPlayer.Play("Intro");
 
         _background = LoadBackground(width, height);
         _playButton = new Bitmap("Resources/GameLaunchButton.png");
