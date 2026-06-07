@@ -19,6 +19,7 @@ public class ThirdLevel : IArena
     private readonly List<IProjectile> _projectiles = new();
     private readonly List<GroundItem>  _groundItems = new();
     private readonly GameOverHelper    _gameOver;
+    private readonly VictoryHelper     _victory;
 
     private const int   PixelSize          = 8;
     private const int   HeartGap           = 12;
@@ -29,6 +30,7 @@ public class ThirdLevel : IArena
     private IArena? _nextArena;
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
+    private bool    _isVictory;
 
     private readonly Queue<Func<ICrow>> _spawnQueue = new();
     private int _spawnTick;
@@ -36,15 +38,16 @@ public class ThirdLevel : IArena
     private readonly Queue<(int At, GroundItemType Type, float Xf)> _dropSchedule = new();
     private int _levelTick;
 
-    public ThirdLevel(int width, int height)
+    public ThirdLevel(int width, int height, int pigeonHealth = -1)
     {
         Width  = width;
         Height = height;
 
         _background = BitmapHelper.LoadScaledBitmap("Resources/ВackgroundThirdLevel.png", width, height);
-        _pigeon  = new Pigeon(100, 100, width, height);
+        _pigeon  = new Pigeon(100, 100, width, height, pigeonHealth);
         _nest    = new Nest(20, 20, width, height);
         _gameOver = new GameOverHelper(width, height);
+        _victory  = new VictoryHelper(width, height);
 
         // порядок появления: 3 обычных → 2 сильных → 1 босс
         _spawnQueue.Enqueue(() => new Crow(width - 200, height / 4f,      CrowChaseSpeed, CrowAttackInterval));
@@ -62,14 +65,21 @@ public class ThirdLevel : IArena
         _groundItems.Add(new GroundItem(width * 0.50f, groundY, GroundItemType.Cigarette));
         _groundItems.Add(new GroundItem(width * 0.70f, groundY, GroundItemType.Beer));
 
+        // расписание дропов (отсортировано по тику)
+        _dropSchedule.Enqueue((250,  GroundItemType.Crumb,     0.40f));
         _dropSchedule.Enqueue((400,  GroundItemType.Cigarette, 0.25f));
         _dropSchedule.Enqueue((700,  GroundItemType.Beer,      0.55f));
+        _dropSchedule.Enqueue((750,  GroundItemType.Crumb,     0.60f));
         _dropSchedule.Enqueue((1000, GroundItemType.Cigarette, 0.45f));
+        _dropSchedule.Enqueue((1200, GroundItemType.Crumb,     0.35f));
         _dropSchedule.Enqueue((1300, GroundItemType.Beer,      0.30f));
         _dropSchedule.Enqueue((1600, GroundItemType.Cigarette, 0.65f));
+        _dropSchedule.Enqueue((1700, GroundItemType.Crumb,     0.55f));
         _dropSchedule.Enqueue((1900, GroundItemType.Beer,      0.40f));
+        _dropSchedule.Enqueue((2150, GroundItemType.Crumb,     0.45f));
         _dropSchedule.Enqueue((2200, GroundItemType.Cigarette, 0.35f));
         _dropSchedule.Enqueue((2500, GroundItemType.Beer,      0.60f));
+        _dropSchedule.Enqueue((2700, GroundItemType.Crumb,     0.30f));
     }
 
     private void SpawnNext()
@@ -77,6 +87,14 @@ public class ThirdLevel : IArena
         if (_spawnQueue.Count == 0) return;
         _crows.Add(_spawnQueue.Dequeue()());
         _spawnTick = 0;
+    }
+
+    private bool AllCrowsDead()
+    {
+        if (_crows.Count == 0 || _spawnQueue.Count > 0) return false;
+        foreach (var crow in _crows)
+            if (!crow.IsDead()) return false;
+        return true;
     }
 
     public void Shoot(int targetX, int targetY)
@@ -97,15 +115,21 @@ public class ThirdLevel : IArena
 
     public void OnLeftClick(int x, int y)
     {
+        if (_isVictory && _victory.IsRestartClicked(x, y) && _nextArena == null)
+        {
+            _nextArena = new FirstLevel(Width, Height);
+            return;
+        }
+
         if (_pigeon.IsDead() && _gameOver.IsRestartClicked(x, y) && _nextArena == null)
-            _nextArena = new ThirdLevel(Width, Height);
+            _nextArena = new FirstLevel(Width, Height);
     }
 
     public IArena? GetNextArena() => _nextArena;
 
     public void Update(MovementInput movementInput)
     {
-        if (_pigeon.IsDead())
+        if (_pigeon.IsDead() || _isVictory)
             return;
 
         _pigeon.Move(movementInput);
@@ -164,10 +188,19 @@ public class ThirdLevel : IArena
             if (p.IsExpired)
                 _projectiles.RemoveAt(i);
         }
+
+        if (AllCrowsDead())
+            _isVictory = true;
     }
 
     public void Draw(Graphics graphics)
     {
+        if (_isVictory)
+        {
+            _victory.Draw(graphics);
+            return;
+        }
+
         graphics.DrawImageUnscaled(_background, 0, 0);
         _nest.Draw(graphics);
 

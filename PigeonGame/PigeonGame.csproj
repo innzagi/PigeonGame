@@ -96,6 +96,18 @@
       <Content Include="Resources\Сhit.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Resources\FinalBackground.png" />
+      <Content Include="Resources\FinalBackground.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Fight.mp3" />
+      <Content Include="Resources\Fight.mp3">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Intro.mp3" />
+      <Content Include="Resources\Intro.mp3">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

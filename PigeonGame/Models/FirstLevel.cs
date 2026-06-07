@@ -104,7 +104,7 @@ public class FirstLevel : IArena
         {
             _crowDeadTicks++;
             if (_crowDeadTicks >= LevelTransitionDelay)
-                _nextArena = new SecondLevel(Width, Height);
+                _nextArena = new SecondLevel(Width, Height, _pigeon.Health);
         }
 
         for (int i = _projectiles.Count - 1; i >= 0; i--)
@@ -113,7 +113,7 @@ public class FirstLevel : IArena
             p.Update();
 
             if (!_crow.IsDead() && p.Hits(_crow))
-            {ы
+            {
                 _crow.TakeDamage(p.Damage);
                 p.Expire();
             }

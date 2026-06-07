@@ -39,13 +39,13 @@ public class SecondLevel : IArena
     private readonly Queue<(int At, GroundItemType Type, float Xf)> _dropSchedule = new();
     private int _levelTick;
 
-    public SecondLevel(int width, int height)
+    public SecondLevel(int width, int height, int pigeonHealth = -1)
     {
         Width  = width;
         Height = height;
 
         _background = BitmapHelper.LoadScaledBitmap("Resources/BackgroundTwoLewel.png", width, height);
-        _pigeon  = new Pigeon(100, 100, width, height);
+        _pigeon  = new Pigeon(100, 100, width, height, pigeonHealth);
         _nest    = new Nest(20, 20, width, height);
         _gameOver = new GameOverHelper(width, height);
 
@@ -63,13 +63,18 @@ public class SecondLevel : IArena
         _groundItems.Add(new GroundItem(width * 0.50f, groundY, GroundItemType.Cigarette));
         _groundItems.Add(new GroundItem(width * 0.65f, groundY, GroundItemType.Beer));
 
-        // расписание повторных дропов: тик, тип, доля ширины экрана
+        // расписание повторных дропов (отсортировано по тику): тик, тип, доля ширины экрана
+        _dropSchedule.Enqueue((300,  GroundItemType.Crumb,     0.40f));
         _dropSchedule.Enqueue((600,  GroundItemType.Cigarette, 0.30f));
-        _dropSchedule.Enqueue((900,  GroundItemType.Beer,      0.60f));
+        _dropSchedule.Enqueue((850,  GroundItemType.Crumb,     0.60f));
+        _dropSchedule.Enqueue((900,  GroundItemType.Beer,      0.55f));
         _dropSchedule.Enqueue((1200, GroundItemType.Cigarette, 0.50f));
+        _dropSchedule.Enqueue((1400, GroundItemType.Crumb,     0.45f));
         _dropSchedule.Enqueue((1500, GroundItemType.Beer,      0.25f));
         _dropSchedule.Enqueue((1800, GroundItemType.Cigarette, 0.70f));
-        _dropSchedule.Enqueue((2100, GroundItemType.Beer,      0.45f));
+        _dropSchedule.Enqueue((1900, GroundItemType.Crumb,     0.35f));
+        _dropSchedule.Enqueue((2100, GroundItemType.Beer,      0.65f));
+        _dropSchedule.Enqueue((2400, GroundItemType.Crumb,     0.50f));
     }
 
     private bool AllCrowsDead()
@@ -105,7 +110,7 @@ public class SecondLevel : IArena
     public void OnLeftClick(int x, int y)
     {
         if (_pigeon.IsDead() && _gameOver.IsRestartClicked(x, y) && _nextArena == null)
-            _nextArena = new SecondLevel(Width, Height);
+            _nextArena = new FirstLevel(Width, Height);
     }
 
     public IArena? GetNextArena() => _nextArena;
@@ -160,7 +165,7 @@ public class SecondLevel : IArena
         {
             _allDeadTicks++;
             if (_allDeadTicks >= LevelTransitionDelay)
-                _nextArena = new ThirdLevel(Width, Height);
+                _nextArena = new ThirdLevel(Width, Height, _pigeon.Health);
         }
 
         for (int i = _projectiles.Count - 1; i >= 0; i--)

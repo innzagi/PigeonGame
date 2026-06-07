@@ -44,7 +44,7 @@ public class Pigeon : IPigeon
 
     public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
 
-    public Pigeon(int x, int y, int windowWidth, int windowHeight)
+    public Pigeon(int x, int y, int windowWidth, int windowHeight, int startHealth = -1)
     {
         X = x;
         Y = y;
@@ -55,7 +55,7 @@ public class Pigeon : IPigeon
         Speed = 10;
 
         MaxHealth = 5;
-        Health = MaxHealth;
+        Health = startHealth > 0 && startHealth <= MaxHealth ? startHealth : MaxHealth;
 
         this.windowWidth = windowWidth;
         this.windowHeight = windowHeight;

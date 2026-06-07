@@ -10,7 +10,7 @@ public class BeerProjectile : BaseProjectile
     public const int W = 32 * 5;
     public const int H = 40 * 5;
 
-    public override int Damage => 10;
+    public override int Damage => 5;
     protected override float RotationSpeed => 3f;
 
     public BeerProjectile(float startX, float startY, float targetX, float targetY)
