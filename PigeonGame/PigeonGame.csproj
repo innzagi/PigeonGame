@@ -84,6 +84,14 @@
       <Content Include="Resources\ВasicСrow.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Resources\GameOver.png" />
+      <Content Include="Resources\GameOver.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Restart.png" />
+      <Content Include="Resources\Restart.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
