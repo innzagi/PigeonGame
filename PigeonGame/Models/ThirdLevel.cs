@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using PigeonGame.Dto;
@@ -6,7 +7,7 @@ using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
-public class FirstLevel : IArena
+public class ThirdLevel : IArena
 {
     public int Width  { get; }
     public int Height { get; }
@@ -14,35 +15,68 @@ public class FirstLevel : IArena
     private readonly Bitmap _background;
     private readonly Pigeon _pigeon;
     private readonly Nest   _nest;
-    private readonly Crow   _crow;
+    private readonly List<ICrow>       _crows      = new();
     private readonly List<IProjectile> _projectiles = new();
     private readonly List<GroundItem>  _groundItems = new();
     private readonly GameOverHelper    _gameOver;
 
-    private const int PixelSize          = 8;
-    private const int HeartGap           = 12;
-    private const int LevelTransitionDelay = 60;
+    private const int   PixelSize          = 8;
+    private const int   HeartGap           = 12;
+    private const float CrowChaseSpeed     = 7.0f;
+    private const int   CrowAttackInterval = 50;
+    private const int   SpawnInterval      = 300;
 
     private IArena? _nextArena;
-    private int     _crowDeadTicks;
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
 
-    public FirstLevel(int width, int height)
+    private readonly Queue<Func<ICrow>> _spawnQueue = new();
+    private int _spawnTick;
+
+    private readonly Queue<(int At, GroundItemType Type, float Xf)> _dropSchedule = new();
+    private int _levelTick;
+
+    public ThirdLevel(int width, int height)
     {
         Width  = width;
         Height = height;
 
-        _background = BitmapHelper.LoadScaledBitmap("Resources/BackgroundFirstLevel.png", width, height);
+        _background = BitmapHelper.LoadScaledBitmap("Resources/ВackgroundThirdLevel.png", width, height);
         _pigeon  = new Pigeon(100, 100, width, height);
         _nest    = new Nest(20, 20, width, height);
-        _crow    = new Crow(width - 200, height / 2f);
         _gameOver = new GameOverHelper(width, height);
 
+        // порядок появления: 3 обычных → 2 сильных → 1 босс
+        _spawnQueue.Enqueue(() => new Crow(width - 200, height / 4f,      CrowChaseSpeed, CrowAttackInterval));
+        _spawnQueue.Enqueue(() => new Crow(width - 200, height * 3f / 4f, CrowChaseSpeed, CrowAttackInterval));
+        _spawnQueue.Enqueue(() => new Crow(width - 200, height / 2f,      CrowChaseSpeed, CrowAttackInterval));
+        _spawnQueue.Enqueue(() => new StrongCrow(width - 200, height / 3f));
+        _spawnQueue.Enqueue(() => new StrongCrow(width - 200, height * 2f / 3f));
+        _spawnQueue.Enqueue(() => new BossCrow(width - 200, height / 2f));
+
+        SpawnNext();
+
         float groundY = height * 0.72f;
-        _groundItems.Add(new GroundItem(width * 0.25f, groundY, GroundItemType.Crumb));
-        _groundItems.Add(new GroundItem(width * 0.45f, groundY, GroundItemType.Crumb));
-        _groundItems.Add(new GroundItem(width * 0.65f, groundY, GroundItemType.Cigarette));
+        _groundItems.Add(new GroundItem(width * 0.15f, groundY, GroundItemType.Crumb));
+        _groundItems.Add(new GroundItem(width * 0.30f, groundY, GroundItemType.Crumb));
+        _groundItems.Add(new GroundItem(width * 0.50f, groundY, GroundItemType.Cigarette));
+        _groundItems.Add(new GroundItem(width * 0.70f, groundY, GroundItemType.Beer));
+
+        _dropSchedule.Enqueue((400,  GroundItemType.Cigarette, 0.25f));
+        _dropSchedule.Enqueue((700,  GroundItemType.Beer,      0.55f));
+        _dropSchedule.Enqueue((1000, GroundItemType.Cigarette, 0.45f));
+        _dropSchedule.Enqueue((1300, GroundItemType.Beer,      0.30f));
+        _dropSchedule.Enqueue((1600, GroundItemType.Cigarette, 0.65f));
+        _dropSchedule.Enqueue((1900, GroundItemType.Beer,      0.40f));
+        _dropSchedule.Enqueue((2200, GroundItemType.Cigarette, 0.35f));
+        _dropSchedule.Enqueue((2500, GroundItemType.Beer,      0.60f));
+    }
+
+    private void SpawnNext()
+    {
+        if (_spawnQueue.Count == 0) return;
+        _crows.Add(_spawnQueue.Dequeue()());
+        _spawnTick = 0;
     }
 
     public void Shoot(int targetX, int targetY)
@@ -64,7 +98,7 @@ public class FirstLevel : IArena
     public void OnLeftClick(int x, int y)
     {
         if (_pigeon.IsDead() && _gameOver.IsRestartClicked(x, y) && _nextArena == null)
-            _nextArena = new FirstLevel(Width, Height);
+            _nextArena = new ThirdLevel(Width, Height);
     }
 
     public IArena? GetNextArena() => _nextArena;
@@ -76,11 +110,16 @@ public class FirstLevel : IArena
 
         _pigeon.Move(movementInput);
 
-        // анимация предметов (падение, свечение)
+        _levelTick++;
+        while (_dropSchedule.Count > 0 && _dropSchedule.Peek().At <= _levelTick)
+        {
+            var (_, type, xf) = _dropSchedule.Dequeue();
+            _groundItems.Add(new GroundItem(Width * xf, Height * 0.72f, type));
+        }
+
         foreach (var item in _groundItems)
             item.Update();
 
-        // подбор предметов с земли
         var pigeonBounds = new RectangleF(_pigeon.X, _pigeon.Y, _pigeon.Width, _pigeon.Height);
         for (int i = _groundItems.Count - 1; i >= 0; i--)
         {
@@ -96,26 +135,30 @@ public class FirstLevel : IArena
             _groundItems.RemoveAt(i);
         }
 
-        if (!_crow.IsDead())
+        if (_spawnQueue.Count > 0)
         {
-            _crow.Update(_pigeon);
+            _spawnTick++;
+            if (_spawnTick >= SpawnInterval)
+                SpawnNext();
         }
-        else
-        {
-            _crowDeadTicks++;
-            if (_crowDeadTicks >= LevelTransitionDelay)
-                _nextArena = new SecondLevel(Width, Height);
-        }
+
+        foreach (var crow in _crows)
+            if (!crow.IsDead())
+                crow.Update(_pigeon);
 
         for (int i = _projectiles.Count - 1; i >= 0; i--)
         {
             var p = _projectiles[i];
             p.Update();
 
-            if (!_crow.IsDead() && p.Hits(_crow))
-            {ы
-                _crow.TakeDamage(p.Damage);
-                p.Expire();
+            foreach (var crow in _crows)
+            {
+                if (!crow.IsDead() && p.Hits(crow))
+                {
+                    crow.TakeDamage(p.Damage);
+                    p.Expire();
+                    break;
+                }
             }
 
             if (p.IsExpired)
@@ -131,7 +174,8 @@ public class FirstLevel : IArena
         foreach (var item in _groundItems)
             item.Draw(graphics);
 
-        _crow.Draw(graphics);
+        foreach (var crow in _crows)
+            crow.Draw(graphics);
 
         foreach (var p in _projectiles)
             p.Draw(graphics);

@@ -24,11 +24,13 @@ public class SecondLevel : IArena
     private const int   HeartGap           = 12;
     private const float CrowChaseSpeed     = 7.0f;
     private const int   CrowAttackInterval = 50;
-    private const int   SpawnInterval      = 300;
+    private const int SpawnInterval        = 300;
+    private const int LevelTransitionDelay = 60;
 
     private IArena? _nextArena;
     private int     _cigaretteAmmo;
     private int     _beerAmmo;
+    private int     _allDeadTicks;
 
     private readonly Queue<Func<ICrow>> _spawnQueue = new();
     private int _spawnTick;
@@ -68,6 +70,13 @@ public class SecondLevel : IArena
         _dropSchedule.Enqueue((1500, GroundItemType.Beer,      0.25f));
         _dropSchedule.Enqueue((1800, GroundItemType.Cigarette, 0.70f));
         _dropSchedule.Enqueue((2100, GroundItemType.Beer,      0.45f));
+    }
+
+    private bool AllCrowsDead()
+    {
+        foreach (var crow in _crows)
+            if (!crow.IsDead()) return false;
+        return _crows.Count > 0;
     }
 
     private void SpawnNext()
@@ -146,6 +155,13 @@ public class SecondLevel : IArena
         foreach (var crow in _crows)
             if (!crow.IsDead())
                 crow.Update(_pigeon);
+
+        if (_spawnQueue.Count == 0 && AllCrowsDead())
+        {
+            _allDeadTicks++;
+            if (_allDeadTicks >= LevelTransitionDelay)
+                _nextArena = new ThirdLevel(Width, Height);
+        }
 
         for (int i = _projectiles.Count - 1; i >= 0; i--)
         {
