@@ -14,9 +14,6 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <None Remove="Resources\Crow.png" />
-      <Content Include="Resources\Crow.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
       <None Remove="Resources\pigeon_eat-Sheet.png" />
       <Content Include="Resources\pigeon_eat-Sheet.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -26,12 +23,65 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <None Remove="Resources\Background.png" />
-      <Content Include="Resources\Background.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
       <None Remove="Resources\nest.svg" />
       <None Remove="Resources\nest.png" />
       <Content Include="Resources\nest.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\BackgroundForTheMenu.png" />
+      <Content Include="Resources\BackgroundForTheMenu.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\GameLaunchButton.png" />
+      <Content Include="Resources\GameLaunchButton.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\BackgroundFirstLevel.png" />
+      <Content Include="Resources\BackgroundFirstLevel.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\BackgroundTwoLewel.png" />
+      <Content Include="Resources\BackgroundTwoLewel.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\ВackgroundThirdLevel.png" />
+      <Content Include="Resources\ВackgroundThirdLevel.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Beer.png" />
+      <Content Include="Resources\Beer.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\BossCrowFly.png" />
+      <Content Include="Resources\BossCrowFly.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\BossCrowStay.png" />
+      <Content Include="Resources\BossCrowStay.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Cigarette.png" />
+      <Content Include="Resources\Cigarette.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Crow_Fly.png" />
+      <Content Include="Resources\Crow_Fly.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\Crow_Stay.png" />
+      <Content Include="Resources\Crow_Stay.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\StrongCrowFly.png" />
+      <Content Include="Resources\StrongCrowFly.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\StrongCrowStay.png" />
+      <Content Include="Resources\StrongCrowStay.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Resources\ВasicСrow.png" />
+      <Content Include="Resources\ВasicСrow.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

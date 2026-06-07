@@ -1,14 +1,14 @@
 using System;
 using System.Windows.Forms;
 using PigeonGame.Dto;
+using PigeonGame.Interfaces;
 using PigeonGame.Models;
 
 namespace PigeonGame
 {
     public partial class ArenaForm : Form
     {
-        // TODO: Заменить на MainMenuForm
-        private FirstLevel _firstLevel;
+        private IArena _arena = null!;
         private readonly System.Windows.Forms.Timer _timer = new();
         private MovementInput _movementInput = new();
 
@@ -33,8 +33,8 @@ namespace PigeonGame
 
         private void StartGame()
         {
-            // TODO: Заменить на MainMenuForm
-            _firstLevel = new FirstLevel(ClientSize.Width, ClientSize.Height);
+            // Игра начинается с главного экрана
+            _arena = new MainMenuForm(ClientSize.Width, ClientSize.Height);
             _timer.Interval = 20;
             _timer.Tick += OnTick;
             _timer.Start();
@@ -42,13 +42,19 @@ namespace PigeonGame
 
         private void OnTick(object? sender, EventArgs e)
         {
-            _firstLevel.Update(_movementInput);
+            _arena.Update(_movementInput);
+
+            // Если текущая арена сообщает о переходе — переключаемся
+            var next = _arena.GetNextArena();
+            if (next != null)
+                _arena = next;
+
             Invalidate();
         }
 
         private void OnPaint(object? sender, PaintEventArgs e)
         {
-            _firstLevel.Draw(e.Graphics);
+            _arena.Draw(e.Graphics);
         }
 
         private void OnKeyDown(object? sender, KeyEventArgs e)
@@ -66,10 +72,13 @@ namespace PigeonGame
             if (e.KeyCode == Keys.A) _movementInput.Left  = false;
             if (e.KeyCode == Keys.D) _movementInput.Right = false;
         }
+
         private void OnMouseDown(object? sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-                _firstLevel.Shoot(e.X, e.Y);
+                _arena.Shoot(e.X, e.Y);
+            else if (e.Button == MouseButtons.Left)
+                _arena.OnLeftClick(e.X, e.Y);
         }
     }
 }

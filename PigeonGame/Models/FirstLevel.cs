@@ -16,7 +16,6 @@ public class FirstLevel : IArena
     private readonly Pigeon _pigeon;
     private readonly Nest _nest;
     private readonly Crow _crow;
-    private IArena NextArena { get; set; }
 
     private readonly List<PigeonDropping> _droppings = new();
 
@@ -36,7 +35,7 @@ public class FirstLevel : IArena
 
     private static Bitmap LoadBackground(int width, int height)
     {
-        var raw = Image.FromFile("Resources/Background.png");
+        var raw = Image.FromFile("Resources/BackgroundFirstLevel.png");
         var bmp = new Bitmap(width, height);
         using var g = Graphics.FromImage(bmp);
         g.InterpolationMode = InterpolationMode.NearestNeighbor;
@@ -52,6 +51,13 @@ public class FirstLevel : IArena
         float cy = _pigeon.Y + _pigeon.Height / 2f;
         _droppings.Add(new PigeonDropping(cx, cy, targetX, targetY));
     }
+
+    public void OnLeftClick(int x, int y)
+    {
+        // На первом уровне ЛКМ ничего не делает
+    }
+
+    public IArena? GetNextArena() => null;
 
     public void Update(MovementInput movementInput)
     {
@@ -78,31 +84,18 @@ public class FirstLevel : IArena
 
     public void Draw(Graphics graphics)
     {
-        if (!_crow.IsDead())
-        {
-            graphics.DrawImageUnscaled(_background, 0, 0);
-            _nest.Draw(graphics);
-            _crow.Draw(graphics);
+        graphics.DrawImageUnscaled(_background, 0, 0);
+        _nest.Draw(graphics);
+        _crow.Draw(graphics);
 
-            foreach (var d in _droppings)
-                d.Draw(graphics);
+        foreach (var d in _droppings)
+            d.Draw(graphics);
 
-            _pigeon.Draw(graphics);
+        _pigeon.Draw(graphics);
 
-            DrawHelper.DrawHealthPanel(graphics, _pigeon.Health, _pigeon.MaxHealth,
-                panelX: 20, panelY: 20,
-                fillColor: Color.Crimson, borderColor: Color.FromArgb(180, 0, 0),
-                pixelSize: PixelSize, heartGap: HeartGap, panelPad: 16);
-        }
-        else
-        {
-            DrawNextArena(graphics);
-        }
-        
-    }
-
-    public void DrawNextArena(Graphics graphics)
-    {
-        NextArena.Draw(graphics);
+        DrawHelper.DrawHealthPanel(graphics, _pigeon.Health, _pigeon.MaxHealth,
+            panelX: 20, panelY: 20,
+            fillColor: Color.Crimson, borderColor: Color.FromArgb(180, 0, 0),
+            pixelSize: PixelSize, heartGap: HeartGap, panelPad: 16);
     }
 }

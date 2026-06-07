@@ -17,15 +17,15 @@ public class Crow : ICrow
     public float X { get; private set; }
     public float Y { get; private set; }
 
-    public int Width { get; } = 350;
-    public int Height { get; } = 350;
+    public int Width { get; } = 250;
+    public int Height { get; } = 250;
     public int Health { get; private set; }
     public int MaxHealth { get; } = 5;
 
     private CrowState _state = CrowState.Chasing;
 
-    private readonly Bitmap[] _flyFrames;
-    private readonly Bitmap[] _attackFrames;
+    private readonly Bitmap[] _flyFrames;   // полёт (погоня)
+    private readonly Bitmap[] _stayFrames;  // стойка/клевок (атака)
 
     private int _frameIndex;
     private int _tickCounter;
@@ -33,51 +33,61 @@ public class Crow : ICrow
 
     // атака: интервал между уронами
     private int _attackCooldown;
-    private const int AttackInterval = 90; // ~1.8 сек при 20мс тике
+    private readonly int _attackInterval; // тиков между ударами (20мс/тик)
 
     // дистанция от центра до центра, при которой начинается атака
     private const float AttackDistance = 80f;
-    private const float ChaseSpeed = 2.5f;
+    private readonly float _chaseSpeed;
 
     private bool _facingLeft;
 
-    // спрайт: 4 строки × 4 столбца, каждый кадр 48×48
-    private const int FrameSize = 48;
-    private const int FramesPerRow = 4;
-    private const int FlyRow = 3;
-    private const int AttackRow = 1;
+    // спрайт-листы: 4 столбца × 2 ряда = 8 кадров в каждом файле
+    private const int SheetCols = 4;
+    private const int SheetRows = 2;
 
     private const int PixelSize = 8; // размер одного «пикселя» сердечка
     private const int HeartCols = 7;
     private const int HeartRows = 6;
     private const int HeartGap = 12; // отступ между сердечками
 
-    public Crow(float startX, float startY)
+    public Crow(float startX, float startY, float chaseSpeed = 2.5f, int attackInterval = 90)
     {
         X = startX;
         Y = startY;
         Health = MaxHealth;
+        _chaseSpeed = chaseSpeed;
+        _attackInterval = attackInterval;
 
-        _flyFrames = SliceRow("Resources/Crow.png", FlyRow);
-        _attackFrames = SliceRow("Resources/Crow.png", AttackRow);
+        _flyFrames  = SliceSheet("Resources/Crow_Fly.png",  SheetCols, SheetRows);
+        _stayFrames = SliceSheet("Resources/Crow_Stay.png", SheetCols, SheetRows);
     }
 
-    private Bitmap[] SliceRow(string path, int row)
+    // Нарезает спрайт-лист на отдельные кадры (слева-направо, сверху-вниз).
+    // Размер кадра вычисляется через float, т.к. ширина/высота листа
+    // не всегда делятся на число столбцов/строк нацело.
+    private Bitmap[] SliceSheet(string path, int cols, int rows)
     {
         var sheet = new Bitmap(path);
-        var frames = new Bitmap[FramesPerRow];
+        float frameW = sheet.Width  / (float)cols;
+        float frameH = sheet.Height / (float)rows;
 
-        for (var i = 0; i < FramesPerRow; i++)
+        var frames = new Bitmap[cols * rows];
+        var index = 0;
+
+        for (var row = 0; row < rows; row++)
         {
-            var frame = new Bitmap(Width, Height);
-            using var g = Graphics.FromImage(frame);
-            g.InterpolationMode = InterpolationMode.NearestNeighbor;
-            g.PixelOffsetMode = PixelOffsetMode.Half;
-            g.DrawImage(sheet,
-                new Rectangle(0, 0, Width, Height),
-                new Rectangle(i * FrameSize, row * FrameSize, FrameSize, FrameSize),
-                GraphicsUnit.Pixel);
-            frames[i] = frame;
+            for (var col = 0; col < cols; col++)
+            {
+                var frame = new Bitmap(Width, Height);
+                using var g = Graphics.FromImage(frame);
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.Half;
+                g.DrawImage(sheet,
+                    new RectangleF(0, 0, Width, Height),
+                    new RectangleF(col * frameW, row * frameH, frameW, frameH),
+                    GraphicsUnit.Pixel);
+                frames[index++] = frame;
+            }
         }
 
         sheet.Dispose();
@@ -102,7 +112,7 @@ public class Crow : ICrow
             if (_attackCooldown <= 0)
             {
                 pigeon.TakeDamage(1);
-                _attackCooldown = AttackInterval;
+                _attackCooldown = _attackInterval;
             }
             else
             {
@@ -114,8 +124,8 @@ public class Crow : ICrow
             _state = CrowState.Chasing;
             _attackCooldown = 0;
 
-            X += dx / dist * ChaseSpeed;
-            Y += dy / dist * ChaseSpeed;
+            X += dx / dist * _chaseSpeed;
+            Y += dy / dist * _chaseSpeed;
 
             _facingLeft = dx < 0;
         }
@@ -129,7 +139,7 @@ public class Crow : ICrow
         if (_tickCounter < TicksPerFrame) return;
 
         _tickCounter = 0;
-        var frames = _state == CrowState.Attacking ? _attackFrames : _flyFrames;
+        var frames = _state == CrowState.Attacking ? _stayFrames : _flyFrames;
         _frameIndex = (_frameIndex + 1) % frames.Length;
     }
 
@@ -138,15 +148,14 @@ public class Crow : ICrow
         if (!IsDead())
             InternalDraw(graphics);
     }
-    
+
     private void InternalDraw(Graphics graphics)
     {
-        var frames = _state == CrowState.Attacking ? _attackFrames : _flyFrames;
-        var frame = frames[_frameIndex];
+        var frames = _state == CrowState.Attacking ? _stayFrames : _flyFrames;
+        var frame = frames[_frameIndex % frames.Length];
 
         int drawX = (int)X;
         int drawY = (int)Y;
-
 
         if (_facingLeft)
         {

@@ -1,4 +1,4 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 using PigeonGame.Dto;
 using PigeonGame.Interfaces;
 
@@ -10,34 +10,57 @@ public class MainMenuForm : IArena
     public int Height { get; }
 
     private readonly Bitmap _background;
-    
-    
+    private readonly Bitmap _playButton;
+    private readonly Rectangle _playButtonBounds;
+
+    private IArena? _nextArena;
+
     public MainMenuForm(int width, int height)
     {
-        var nextArena = new FirstLevel(width, height);
-        NextArena = nextArena;
+        Width = width;
+        Height = height;
+
+        _background = LoadBackground(width, height);
+        _playButton = new Bitmap("Resources/GameLaunchButton.png");
+
+        // Кнопка по центру экрана. Высота вычисляется пропорционально картинке.
+        int btnWidth = 400;
+        int btnHeight = (int)(_playButton.Height * (btnWidth / (float)_playButton.Width));
+        _playButtonBounds = new Rectangle(
+            (width - btnWidth) / 2,
+            (height - btnHeight) / 2,
+            btnWidth,
+            btnHeight);
     }
 
-    public IArena NextArena { get; set; }
-    
-    // TODO: Вынести в интерфейс UpdatableArena
     public void Update(MovementInput movementInput)
     {
+        // На главном экране ничего обновлять не нужно
     }
+
+    public void Shoot(int targetX, int targetY)
+    {
+        // На главном экране стрелять нельзя
+    }
+
+    public void OnLeftClick(int x, int y)
+    {
+        // Если клик попал в кнопку «Играть» — готовим переход на первый уровень
+        if (_playButtonBounds.Contains(x, y) && _nextArena == null)
+            _nextArena = new FirstLevel(Width, Height);
+    }
+
+    public IArena? GetNextArena() => _nextArena;
 
     public void Draw(Graphics graphics)
     {
-        throw new NotImplementedException();
+        graphics.DrawImageUnscaled(_background, 0, 0);
+        graphics.DrawImage(_playButton, _playButtonBounds);
     }
 
-    public void DrawNextArena(Graphics graphics)
-    {
-        throw new NotImplementedException();
-    }
-    
     private static Bitmap LoadBackground(int width, int height)
     {
-        var raw = Image.FromFile("BackgroundForTheMenu.png");
+        var raw = Image.FromFile("Resources/BackgroundForTheMenu.png");
         var bmp = new Bitmap(width, height);
         using var g = Graphics.FromImage(bmp);
         g.InterpolationMode = InterpolationMode.NearestNeighbor;
@@ -46,5 +69,4 @@ public class MainMenuForm : IArena
         raw.Dispose();
         return bmp;
     }
-    
 }
