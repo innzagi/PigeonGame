@@ -50,7 +50,7 @@ public class Crow : ICrow
     private const int HeartRows = 6;
     private const int HeartGap = 12; // отступ между сердечками
 
-    public Crow(float startX, float startY, float chaseSpeed = 2.5f, int attackInterval = 90)
+    public Crow(float startX, float startY, float chaseSpeed = 8.0f, int attackInterval = 90)
     {
         X = startX;
         Y = startY;

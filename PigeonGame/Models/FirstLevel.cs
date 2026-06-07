@@ -80,8 +80,9 @@ public class FirstLevel : IArena
 
     public void Shoot(int targetX, int targetY)
     {
-        // Пока голубь жив — можно стрелять
+        // Стрелять можно только живым и когда прошла перезарядка
         if (_pigeon.IsDead()) return;
+        if (!_pigeon.TryShoot()) return;
 
         float cx = _pigeon.X + _pigeon.Width / 2f;
         float cy = _pigeon.Y + _pigeon.Height / 2f;

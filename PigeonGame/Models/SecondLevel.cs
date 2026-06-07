@@ -55,6 +55,9 @@ public class SecondLevel : IArena
 
     public void Shoot(int targetX, int targetY)
     {
+        // Стрелять можно только когда прошла перезарядка
+        if (!_pigeon.TryShoot()) return;
+
         float cx = _pigeon.X + _pigeon.Width / 2f;
         float cy = _pigeon.Y + _pigeon.Height / 2f;
         _droppings.Add(new PigeonDropping(cx, cy, targetX, targetY));

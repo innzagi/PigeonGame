@@ -28,6 +28,16 @@ public class Pigeon : IPigeon
 
     private bool _facingLeft;
 
+    // неуязвимость после получения урона (i-frames)
+    private int _invulnerableTicks;
+    private const int InvulnerabilityDuration = 60; // ~1.2 сек при 20мс/тик
+    public bool IsInvulnerable => _invulnerableTicks > 0;
+
+    // перезарядка атаки (любым оружием)
+    private int _shootCooldownTicks;
+    private const int ShootCooldownDuration = 40;
+    public bool CanShoot => _shootCooldownTicks <= 0;
+
     // ground level: bottom 25% of the window matches the pavement in the background
     private int GroundY => (int)(windowHeight * 0.75);
     private bool IsOnGround => Y + Height >= GroundY;
@@ -74,6 +84,12 @@ public class Pigeon : IPigeon
 
     public void Move(MovementInput movementInput)
     {
+        if (_invulnerableTicks > 0)
+            _invulnerableTicks--;
+
+        if (_shootCooldownTicks > 0)
+            _shootCooldownTicks--;
+
         if (movementInput.Left)  { X -= Speed; _facingLeft = true;  }
         if (movementInput.Right) { X += Speed; _facingLeft = false; }
         if (movementInput.Up)    Y -= Speed;
@@ -104,8 +120,15 @@ public class Pigeon : IPigeon
 
     public void TakeDamage(int damage)
     {
+        // во время неуязвимости урон не проходит
+        if (_invulnerableTicks > 0) return;
+
         Health -= damage;
         if (Health < 0) Health = 0;
+
+        // запускаем неуязвимость, чтобы следующий удар (в т.ч. от других ворон)
+        // не прошёл сразу в этом же или ближайших кадрах
+        _invulnerableTicks = InvulnerabilityDuration;
     }
 
     public void Heal(int value)
@@ -116,8 +139,22 @@ public class Pigeon : IPigeon
 
     public bool IsDead() => Health <= 0;
 
+    // Пытается выстрелить: если перезарядка прошла — запускает её заново и
+    // возвращает true. Иначе (ещё идёт перезарядка) возвращает false.
+    public bool TryShoot()
+    {
+        if (_shootCooldownTicks > 0) return false;
+
+        _shootCooldownTicks = ShootCooldownDuration;
+        return true;
+    }
+
     public void Draw(Graphics graphics)
     {
+        // мигаем во время неуязвимости: пропускаем отрисовку каждые ~5 кадров
+        if (_invulnerableTicks > 0 && (_invulnerableTicks / 5) % 2 == 0)
+            return;
+
         var frames = IsOnGround ? walkFrames : flyFrames;
         var frame = frames[frameIndex % frames.Length];
 
