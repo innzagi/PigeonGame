@@ -48,9 +48,9 @@ public class MainMenuForm : IArena
 
     public void OnLeftClick(int x, int y)
     {
-        // Если клик попал в кнопку «Играть» — готовим переход на первый уровень
+        // Если клик попал в кнопку «Играть» — сначала показываем правила
         if (_playButtonBounds.Contains(x, y) && _nextArena == null)
-            _nextArena = new FirstLevel(Width, Height);
+            _nextArena = new RulesScreen(Width, Height);
     }
 
     public IArena? GetNextArena() => _nextArena;
