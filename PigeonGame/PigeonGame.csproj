@@ -108,6 +108,10 @@
       <Content Include="Resources\Intro.mp3">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Resources\pop.png" />
+      <Content Include="Resources\pop.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

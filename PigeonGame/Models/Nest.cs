@@ -1,8 +1,6 @@
-﻿using PigeonGame.Interfaces;
+﻿namespace PigeonGame.Models;
 
-namespace PigeonGame.Models;
-
-public class Nest : INest
+public class Nest
 {
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -13,8 +11,6 @@ public class Nest : INest
 
     private readonly int windowWidth;
     private readonly int windowHeight;
-    
-    public Rectangle Bounds => new Rectangle(X, Y, Width, Height); // отрисовка 
 
     public Nest(int x, int y, int windowWidth, int windowHeight)
     {

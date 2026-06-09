@@ -1,10 +1,9 @@
 using System.Drawing;
 using PigeonGame.Dto;
-using PigeonGame.Interfaces;
 
 namespace PigeonGame.Models;
 
-public class Pigeon : IPigeon
+public class Pigeon
 {
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -41,8 +40,6 @@ public class Pigeon : IPigeon
     // ground level: bottom 25% of the window matches the pavement in the background
     private int GroundY => (int)(windowHeight * 0.75);
     private bool IsOnGround => Y + Height >= GroundY;
-
-    public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
 
     public Pigeon(int x, int y, int windowWidth, int windowHeight, int startHealth = -1)
     {
